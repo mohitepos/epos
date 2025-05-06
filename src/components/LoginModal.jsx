@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
 const { Link } = Typography;
+const apiUrl = import.meta.env.VITE_API_URL; 
 
 // Login function that will be called by React Query's mutation
 const loginCustomer = async (data) => {
@@ -14,7 +15,7 @@ const loginCustomer = async (data) => {
   };
   try {
     const response = await axios.post(
-      "/api/rest/V1/integration/customer/token",
+      `${apiUrl}/rest/V1/integration/customer/token`,
       payload,
       {
         headers: {
@@ -38,7 +39,7 @@ const LoginModal = ({ isVisible, onClose }) => {
     onSuccess: async (data) => {
       try {
         // Make a request to get customer details using the token
-        const customerResponse = await axios.get("/api/rest/V1/customers/me", {
+        const customerResponse = await axios.get(`${apiUrl}/rest/V1/customers/me`, {
           headers: {
             Authorization: `Bearer ${data}`,
             "Content-Type": "application/json",
