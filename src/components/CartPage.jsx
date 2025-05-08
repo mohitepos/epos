@@ -2,55 +2,55 @@ import React from "react";
 import { Table, Typography, Button, Spin, notification } from "antd";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../utils/axios"; // Assuming apiClient is correctly set up
 
 const { Title } = Typography;
 
 // Fetch cart (including items)
 const fetchCartData = async () => {
-    const customer = JSON.parse(localStorage.getItem("customer"));
-    const customerToken = customer.token;
-  const response = await fetch("/api/rest/V1/carts/mine", {
+  const customer = JSON.parse(localStorage.getItem("customer"));
+  const customerToken = customer.token;
+  
+  // Use apiClient to fetch the cart data
+  const response = await apiClient.get("/rest/V1/carts/mine", {
     headers: {
       Authorization: `Bearer ${customerToken}`,
       "Content-Type": "application/json",
     },
   });
 
-  if (!response.ok) {
+  if (!response.data) {
     throw new Error("Failed to fetch cart data");
   }
 
-  return response.json();
+  return response.data; // Return the data to React Query
 };
 
 // Delete an item from the cart
 const deleteCartItem = async (itemId) => {
-    const customer = JSON.parse(localStorage.getItem("customer"));
-    const customerToken = customer.token;
-  const response = await fetch(`/api/rest/V1/carts/mine/items/${itemId}`, {
-    method: "DELETE",
+  const customer = JSON.parse(localStorage.getItem("customer"));
+  const customerToken = customer.token;
+  
+  // Use apiClient to delete the cart item
+  const response = await apiClient.delete(`/rest/V1/carts/mine/items/${itemId}`, {
     headers: {
       Authorization: `Bearer ${customerToken}`,
       "Content-Type": "application/json",
     },
   });
 
-  if (!response.ok) {
+  // Handle response
+  if (!response.data) {
     throw new Error("Failed to remove item from cart");
   }
 
-  return response.json();
+  return response.data; // Return response data (or any other useful data)
 };
 
 const CartPage = () => {
   const navigate = useNavigate();
 
-  const {
-    data: cart,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data: cart, isLoading, isError, refetch } = useQuery({
     queryKey: ["cartData"],
     queryFn: fetchCartData,
   });

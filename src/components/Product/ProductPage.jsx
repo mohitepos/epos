@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import useProductBySku from '../../hooks/useProductBySku';
+import useProductBySku from '../../hooks/useProductById';
 import { Spin, Alert, Card, Col, Row, Button, Typography, Select } from 'antd';
 import { ShoppingCartOutlined, HeartOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
@@ -103,7 +103,15 @@ const ProductPage = () => {
         </Col>
 
         <Col xs={24} md={12}>
-          <Title level={2}>{name}</Title>
+        <Title
+      level={1}
+      style={{
+        fontSize: '30px',
+        fontWeight: 800,
+        marginBottom: 0,
+        lineHeight: 'normal',
+      }}
+    >{name}</Title>
           <Title level={4} style={{ color: '#ff4d4f' }}>${price}</Title>
 
           {type_id === 'configurable' && renderOptionSelectors()}

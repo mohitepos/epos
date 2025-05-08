@@ -23,7 +23,7 @@ const HomeProducts = () => {
     const handleAddToCart = (product) => {
         if (product.type_id === 'configurable') {
             console.log(`Redirecting to configurable product page: ${product.name}`);
-            navigate(`/product/${product.sku}`); // Navigate to configurable product page for selection
+            navigate(`/product/${product.id}`); // Navigate to configurable product page for selection
             return; // Prevent further execution
         }
         const cartItem = {
