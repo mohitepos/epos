@@ -1,8 +1,9 @@
-import React from 'react';
-import { Layout, Row, Col, Input, Button, Typography, Space, Image } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Row, Col, Input, Button, Typography, Space, Image, message } from 'antd';
 import { MailOutlined, FacebookOutlined, InstagramOutlined, LinkedinFilled } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import AppStoreImage from '../assets/home/AppStore.png';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 const { Footer } = Layout;
 const { Title, Text } = Typography;
@@ -13,6 +14,34 @@ const linkStyle = {
 };
 
 const AppFooter = () => {
+    const [email,setEmail] = useState('');
+
+    const {mutate, isLoading, isError, isSuccess, error } = useMutation({
+        mutationFn:async (email)=>{
+            const response = await axios.post('api/rest/all/V1/subscriber',{
+                subscriber:{
+                    subscriber_email:email
+                }
+            })
+            return response.data;
+        },
+        onSuccess:()=>{
+            message.success('Subscription Successfully!.')
+            setEmail('');
+        },
+        onError:(error)=>{
+            message.error(`Error: ${error.response?.data?.message || 'An error occurred'}`);
+        }
+    })
+
+    const handleSubscribe = () =>{
+        console.warn("email:- ",email);
+         if (!email) {
+            message.error('Please enter a valid email.');
+            return;
+        }
+        mutate(email)
+    }
     return (
         <Footer style={{ backgroundColor: '#041E25', color: '#fff', padding: '40px 60px' }}>
             <Row gutter={32}>
@@ -32,9 +61,12 @@ const AppFooter = () => {
                                 width: 300,
                                 borderRadius: '50px',
                             }}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             suffix={
                                 <Button
                                     type="primary"
+                                    onClick={handleSubscribe}
                                     style={{
                                         borderRadius: '50px',
                                         borderLeft: 'none',
@@ -51,7 +83,7 @@ const AppFooter = () => {
                         {/* Payment Methods - Image */}
                         <Image
                             preview={false}
-                            src="/assets/home/payment_logo.png"
+                            src="/epos/assets/home/payment_logo.png"
                             alt="Payment Methods"
                             style={{ width: '60%', margin: '8px 10px' }}
                         />
@@ -61,7 +93,7 @@ const AppFooter = () => {
                             <Col span={3}>
                                 <Image
                                     preview={false}
-                                    src="/assets/home/Dmca.png"
+                                    src="/epos/assets/home/Dmca.png"
                                     alt="DMCA"
                                     style={{ width: '100%', margin: '8px 10px' }}
                                 />
@@ -69,7 +101,7 @@ const AppFooter = () => {
                             <Col span={6}>
                                 <Image
                                     preview={false}
-                                    src="/assets/home/comodo_secure.png"
+                                    src="/epos/assets/home/comodo_secure.png"
                                     alt="Comodo Secure"
                                     style={{ width: '40%', margin: '8px 10px' }}
                                 />
@@ -137,7 +169,7 @@ const AppFooter = () => {
                         {/* App Store Image */}
                         <Link to="https://apps.apple.com" target="_blank">
                             <Image
-                                src="/assets/home/AppStore.png"
+                                src="/epos/assets/home/AppStore.png"
                                 alt="App Store"
                                 style={{ width: '150px', marginBottom: '8px', marginTop: '16px' }}
                                 preview={false}
@@ -147,7 +179,7 @@ const AppFooter = () => {
                         {/* Google Play Image with marginTop */}
                         <Link to="https://play.google.com/store" target="_blank">
                             <Image
-                                src="/assets/home/GooglePlayStore.png"
+                                src="/epos/assets/home/GooglePlayStore.png"
                                 alt="Google Play"
                                 style={{ width: '150px', marginTop: '8px' }}
                                 preview={false}

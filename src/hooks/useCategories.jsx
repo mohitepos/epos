@@ -1,13 +1,13 @@
 // src/hooks/useCategories.js
 
 import { useQuery } from "@tanstack/react-query"; // React Query v5
-import axios from "axios";
+import apiClient from "../utils/axios"; // Import the custom Axios instance
 
 // Fetch categories function
 const fetchCategories = async () => {
   try {
-    // Use the relative URL here because Vite will proxy it to the correct server
-    const response = await axios.get('/api/rest/default/V1/U/categories');
+    // Use the custom Axios instance
+    const response = await apiClient.get("/rest/default/V1/U/categories");
     console.log(response);
     return response.data; // Return the fetched categories data
   } catch (error) {

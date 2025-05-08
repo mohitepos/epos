@@ -1,13 +1,17 @@
+// src/hooks/useCartSummary.js
+
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../utils/axios'; // Import the apiClient instance
 
 const fetchCartSummary = async () => {
   const customer = JSON.parse(localStorage.getItem("customer"));
-  const customerToken = customer.token;
+  const customerToken = customer?.token;
+
   if (!customerToken) throw new Error('User not logged in');
 
   try {
-    const res = await axios.get('/api/rest/V1/carts/mine', {
+    // Make the GET request using apiClient to fetch the cart summary
+    const res = await apiClient.get('/rest/V1/carts/mine', {
       headers: {
         Authorization: `Bearer ${customerToken}`,
         "Content-Type": "application/json",
@@ -15,9 +19,10 @@ const fetchCartSummary = async () => {
     });
     return res.data;
   } catch (error) {
+    // Handle errors and create a new cart if needed
     if (error.response?.status === 400 || error.response?.status === 404) {
       console.log('No cart found, creating one...');
-      const createCartRes = await axios.post('/api/rest/V1/carts/mine', {}, {
+      const createCartRes = await apiClient.post('/rest/V1/carts/mine', {}, {
         headers: {
           Authorization: `Bearer ${customerToken}`,
         },

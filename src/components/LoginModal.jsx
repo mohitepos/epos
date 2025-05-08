@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+// src/components/LoginModal.jsx
+import React from "react";
 import { Modal, Form, Input, Button, Checkbox, Typography, notification, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import apiClient from "../utils/axios"; // Import the custom Axios instance
 
 const { Link } = Typography;
-const apiUrl = import.meta.env.VITE_API_URL; 
 
 // Login function that will be called by React Query's mutation
 const loginCustomer = async (data) => {
@@ -13,15 +13,11 @@ const loginCustomer = async (data) => {
     username: data.username,
     password: data.password,
   };
+
   try {
-    const response = await axios.post(
-      `${apiUrl}/rest/V1/integration/customer/token`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const response = await apiClient.post(
+      "/rest/V1/integration/customer/token",  // Use the custom Axios instance with the base URL
+      payload
     );
     return response.data; // Token is returned here
   } catch (error) {
@@ -38,28 +34,25 @@ const LoginModal = ({ isVisible, onClose }) => {
     mutationFn: loginCustomer,
     onSuccess: async (data) => {
       try {
-        // Make a request to get customer details using the token
-        const customerResponse = await axios.get(`${apiUrl}/rest/V1/customers/me`, {
+        const customerResponse = await apiClient.get("/rest/V1/customers/me", {
           headers: {
             Authorization: `Bearer ${data}`,
-            "Content-Type": "application/json",
           },
         });
 
-        // Save necessary customer info to localStorage
         const customerData = {
           token: data,
           id: customerResponse.data.id,
           email: customerResponse.data.email,
           name: `${customerResponse.data.firstname} ${customerResponse.data.lastname}`,
         };
-        localStorage.setItem("customer", JSON.stringify(customerData)); // Save customer name
+        localStorage.setItem("customer", JSON.stringify(customerData));
 
         notification.success({
           message: "Logged in successfully!",
         });
-        onClose(); // Close the modal on success
-        navigate("/customer/account"); // Redirect to the customer account page
+        onClose();
+        navigate("/customer/account");
       } catch (error) {
         notification.error({
           message: "Failed to fetch customer details",
@@ -76,25 +69,24 @@ const LoginModal = ({ isVisible, onClose }) => {
     },
   });
 
-  // Function to handle form submission
   const handleLogin = (values) => {
     mutate(values); // Trigger the mutation with form values
   };
 
   const handleNavigateToRegister = () => {
-    onClose(); // Close the modal
-    navigate("/register"); // Navigate to the register page
+    onClose();
+    navigate("/register");
   };
 
   return (
     <Modal
       title="Login"
-      open={isVisible} // Use open instead of visible
+      open={isVisible}
       onCancel={onClose}
       footer={null}
-      destroyOnClose={true} // Destroy the modal content when closed
+      destroyOnClose={true}
       centered
-      width={400} // Custom width for the modal
+      width={400}
     >
       <Form
         name="login"
@@ -106,10 +98,7 @@ const LoginModal = ({ isVisible, onClose }) => {
         <Form.Item
           label="Email"
           name="username"
-          rules={[
-            { required: true, message: "Please input your email!" },
-            { type: "email", message: "Please input a valid email!" },
-          ]}
+          rules={[{ required: true, message: "Please input your email!" }, { type: "email", message: "Please input a valid email!" }]}
         >
           <Input placeholder="Enter your email" />
         </Form.Item>
@@ -131,16 +120,16 @@ const LoginModal = ({ isVisible, onClose }) => {
             type="primary"
             htmlType="submit"
             block
-            loading={isLoading} // Ant Design's loading prop is connected to React Query's mutation state
-            style={{ backgroundColor: "#CD253A", borderColor: "#CD253A" }}
+            loading={isLoading}
+            style={{ backgroundColor: "#FFB144", borderColor: "#FFB144", color: "#000", fontWeight: "500" }}
           >
-            {isLoading ? <Spin /> : "Log in"} {/* Show a spinner if loading */}
+            {isLoading ? <Spin /> : "Log in"}
           </Button>
         </Form.Item>
 
         <Form.Item>
           <div style={{ textAlign: "center" }}>
-            <Link onClick={handleNavigateToRegister} style={{ color: "#CD253A" }}>
+            <Link onClick={handleNavigateToRegister} style={{ color: "#000", fontWeight: "500" }}>
               Create an account
             </Link>
           </div>
@@ -151,3 +140,4 @@ const LoginModal = ({ isVisible, onClose }) => {
 };
 
 export default LoginModal;
+  

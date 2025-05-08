@@ -16,6 +16,7 @@ import NotFound from "./components/NotFound";
 import HomeSaleBanner from "./components/HomeSaleBanner";
 import SingleBanner from "./components/SingleBanner";
 import CartPage from "./components/CartPage";
+import ProductPage from "./components/Product/ProductPage";
 
 const { Content } = Layout;
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/customer/account" element={<CustomerDashboard />} />
                 <Route path="/cart" element={<CartPage />}/>
                 <Route path="*" element={<NotFound />} />
+                <Route path="/product/:sku" element={<ProductPage />} />
               </Routes>
             </Content>
 

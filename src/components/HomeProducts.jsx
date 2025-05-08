@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useProduct from '../hooks/useProduct';
 import { Card, Row, Col, Spin, Alert, Space } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { EyeOutlined, HeartOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import useAddToCart from '../hooks/useAddToCart';
 
@@ -11,22 +11,34 @@ const HomeProducts = () => {
     const { data, isError, isLoading } = useProduct();
     const [products, setProducts] = useState([]);
     const { mutate: addToCart } = useAddToCart();
+    const navigate = useNavigate();
 
     const [hoveredProductId, setHoveredProductId] = useState(null);
     const [loadingProductId, setLoadingProductId] = useState(null); // Track loading state per product
+    const [isGlobalLoading, setIsGlobalLoading] = useState(false); // Global loading state for the whole page
 
     const handleMouseEnter = (id) => setHoveredProductId(id);
     const handleMouseLeave = () => setHoveredProductId(null);
 
     const handleAddToCart = (product) => {
+        if (product.type_id === 'configurable') {
+            console.log(`Redirecting to configurable product page: ${product.name}`);
+            navigate(`/product/${product.sku}`); // Navigate to configurable product page for selection
+            return; // Prevent further execution
+        }
         const cartItem = {
             sku: product.sku,
             qty: 1
         };
 
-        setLoadingProductId(product.id);
+        // Set global loading state to true when a product is being added to the cart
+        // setIsGlobalLoading(true);
+        setLoadingProductId(product.id); // Set loading state for this product
         addToCart(cartItem, {
-            onSettled: () => setLoadingProductId(null),
+            onSettled: () => {
+                // setIsGlobalLoading(false); // Reset global loading state when the request is settled
+                setLoadingProductId(null); // Reset loading state for the product
+            },
             onSuccess: () => {
                 console.log("Added to cart:", product);
             },
@@ -52,6 +64,25 @@ const HomeProducts = () => {
 
     return (
         <div style={{ padding: '0 16px' }}>
+            {isGlobalLoading && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent background
+                        zIndex: 9999, // Ensure it's on top of other content
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Spin size="large" />
+                </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2>Apparel</h2>
                 <a href="/apparel" style={{ color: '#041E25', fontWeight: '600', textDecoration: 'underline' }}>
@@ -85,22 +116,21 @@ const HomeProducts = () => {
                                             position: 'relative',
                                         }}
                                     >
-                                            <div
-                                                style={{
-                                                    width: '100%',
-                                                    height: '200px',
-                                                    overflow: 'hidden',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    position: 'relative',
-                                                    transition: 'all 0.3s ease',
-                                                }}
-                                                onMouseEnter={() => handleMouseEnter(product.id)}
-                                                onMouseLeave={handleMouseLeave}
-                                            >
-                                        <Link to={productUrl}>
-
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                height: '200px',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                position: 'relative',
+                                                transition: 'all 0.3s ease',
+                                            }}
+                                            onMouseEnter={() => handleMouseEnter(product.id)}
+                                            onMouseLeave={handleMouseLeave}
+                                        >
+                                            <Link to={productUrl}>
                                                 <img
                                                     alt={product.name}
                                                     src={images.length > 0 ? images[0] : '/default.png'}
@@ -111,95 +141,95 @@ const HomeProducts = () => {
                                                         transition: 'transform 0.3s ease',
                                                     }}
                                                 />
-                                        </Link>
-                                                
-                                                {hoveredProductId === product.id && (
-                                                    <div
-                                                        style={{
-                                                            position: 'absolute',
-                                                            bottom: '0',
-                                                            left: '0',
-                                                            width: '100%',
-                                                            backgroundColor: '#fff',
-                                                            display: 'flex',
-                                                            justifyContent: 'space-around',
-                                                            padding: '10px 0',
-                                                            zIndex: 2,
-                                                        }}
-                                                    >
-                                                        {[ // Icons with circular background
-                                                            {
-                                                                icon: <ShoppingCartOutlined />,
-                                                                onClick: () => handleAddToCart(product),
-                                                            },
-                                                            {
-                                                                icon: <HeartOutlined />,
-                                                                onClick: () => console.log('Add to wishlist'),
-                                                            },
-                                                            {
-                                                                icon: <EyeOutlined />,
-                                                                onClick: () => console.log('Quick view'),
-                                                            },
-                                                        ].map((item, index) => (
-                                                            <div
-                                                                key={index}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation(); // prevent bubbling just in case
-                                                                    item.onClick();
-                                                                }}
-                                                                style={{
-                                                                    width: '36px',
-                                                                    height: '36px',
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: '#fff',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    cursor: 'pointer',
-                                                                    transition: 'all 0.3s ease',
-                                                                    border: '1px solid #ddd',
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                    e.currentTarget.style.backgroundColor = '#FFB144';
-                                                                    // e.currentTarget.firstChild.style.color = '#FFB144';
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                    e.currentTarget.style.backgroundColor = '#fff';
-                                                                    e.currentTarget.firstChild.style.color = '#000';
-                                                                }}
-                                                            >
-                                                                {React.cloneElement(item.icon, {
-                                                                    style: {
-                                                                        fontSize: '18px',
-                                                                        color: '#000',
-                                                                        transition: 'color 0.3s ease',
-                                                                    },
-                                                                })}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                            </Link>
 
-
-
-                                            </div>
-                                            <Link to={productUrl}>
-                                        <Meta
-                                            title={
+                                            {hoveredProductId === product.id && (
                                                 <div
                                                     style={{
-                                                        wordWrap: 'break-word',
-                                                        whiteSpace: 'normal',
-                                                        color: '#041E25',
-                                                        height: '48px',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
+                                                        position: 'absolute',
+                                                        bottom: '0',
+                                                        left: '0',
+                                                        width: '100%',
+                                                        backgroundColor: '#fff',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-around',
+                                                        padding: '10px 0',
+                                                        zIndex: 2,
                                                     }}
                                                 >
-                                                    {product.name}
+                                                    {[ // Icons with circular background
+                                                        {
+                                                            icon: loadingProductId === product.id ? (
+                                                                <Spin size="small" />
+                                                            ) : (
+                                                                <ShoppingCartOutlined />
+                                                            ),
+                                                            onClick: () => handleAddToCart(product),
+                                                        },
+                                                        {
+                                                            icon: <HeartOutlined />,
+                                                            onClick: () => console.log('Add to wishlist'),
+                                                        },
+                                                        {
+                                                            icon: <EyeOutlined />,
+                                                            onClick: () => console.log('Quick view'),
+                                                        },
+                                                    ].map((item, index) => (
+                                                        <div
+                                                            key={index}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // prevent bubbling just in case
+                                                                item.onClick();
+                                                            }}
+                                                            style={{
+                                                                width: '36px',
+                                                                height: '36px',
+                                                                borderRadius: '50%',
+                                                                backgroundColor: '#fff',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.3s ease',
+                                                                border: '1px solid #ddd',
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.backgroundColor = '#FFB144';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.backgroundColor = '#fff';
+                                                            }}
+                                                        >
+                                                            {React.cloneElement(item.icon, {
+                                                                style: {
+                                                                    fontSize: '18px',
+                                                                    color: '#000',
+                                                                    transition: 'color 0.3s ease',
+                                                                },
+                                                            })}
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            }
-                                        />
+                                            )}
+                                        </div>
+
+                                        <Link to={productUrl}>
+                                            <Meta
+                                                title={
+                                                    <div
+                                                        style={{
+                                                            wordWrap: 'break-word',
+                                                            whiteSpace: 'normal',
+                                                            color: '#041E25',
+                                                            height: '48px',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                        }}
+                                                    >
+                                                        {product.name}
+                                                    </div>
+                                                }
+                                            />
                                         </Link>
 
                                         <div className="product-price" style={{ marginTop: '10px', minHeight: '40px' }}>
