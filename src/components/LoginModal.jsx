@@ -52,7 +52,7 @@ const LoginModal = ({ isVisible, onClose }) => {
           message: "Logged in successfully!",
         });
         onClose();
-        navigate("/customer/account");
+        navigate("/");
       } catch (error) {
         notification.error({
           message: "Failed to fetch customer details",
