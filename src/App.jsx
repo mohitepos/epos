@@ -57,7 +57,7 @@ function App() {
                 <Route path="/customer/account" element={<CustomerDashboard />} />
                 <Route path="/cart" element={<CartPage />}/>
                 <Route path="*" element={<NotFound />} />
-                <Route path="/product/:sku" element={<ProductPage />} />
+                <Route path="/product/:id" element={<ProductPage />} />
               </Routes>
             </Content>
 

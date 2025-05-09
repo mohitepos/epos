@@ -14,9 +14,11 @@ const fetchProductById = async (id) => {
       throw new Error('Invalid response type. Expected JSON.');
     }
 
-    return response.data; // Return product data from the response
+    // Return the entire response data as is
+    console.log('response',response.data);
+    return response.data;  // No transformation, send everything from the API response
+
   } catch (error) {
-    // Log and throw more descriptive error
     console.error('Error fetching product details:', error);
     throw new Error('Error fetching product details: ' + error.message);
   }
